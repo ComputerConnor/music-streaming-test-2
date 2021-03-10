@@ -1,0 +1,94 @@
+# Continuous Integration config
+# travis-ci.org
+#
+# see http://about.travis-ci.org/docs/user/build-configuration/
+#
+
+language: python
+sudo: False
+cache:
+  - pip
+
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  - "3.7-dev"
+  - "pypy"
+  - "pypy3"
+
+env:
+  - CHERRYPY_VERSION=""
+
+matrix:
+  include:
+    - python: "2.6"
+      env: "CHERRYPY_VERSION='>=3.2,<10'"
+    - python: "2.7"
+      env: "CHERRYPY_VERSION='>=3.2,<3.3'"
+    - python: "2.7"
+      env: "CHERRYPY_VERSION='>=3.3,<3.4'"
+    - python: "2.7"
+      env: "CHERRYPY_VERSION='>=3.4,<3.5'"
+    - python: "2.7"
+      env: "CHERRYPY_VERSION='>=3.5,<3.6'"
+    - python: "3.3"
+      env: "CHERRYPY_VERSION='>=3.2,<3.3'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=4.0,<5.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=5.0,<6.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=6.0,<7.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=7.0,<8.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=8.0,<9.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=9.0,<10.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=10.0,<11.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=11.0,<12.0'"
+    - python: "3.4"
+      env: "CHERRYPY_VERSION='>=12.0,<13.0'"
+  allow_failures:
+    - python: "3.7-dev"
+    - env: "CHERRYPY_VERSION='>=3.3,<3.4'"
+    - env: "CHERRYPY_VERSION='>=3.4,<3.5'"
+    - env: "CHERRYPY_VERSION='>=3.5,<3.6'"
+  fast_finish: true
+
+# command to install dependencies
+install:
+  - "pip install --upgrade setuptools"
+  - "pip install --upgrade six"
+  - "pip install cherrypy${CHERRYPY_VERSION} --no-use-wheel"
+  - "pip install coveralls pyyaml"
+  - "if [[ $TRAVIS_PYTHON_VERSION = 2.6 ]]; then pip install unittest2; fi"
+
+# prepare test run; test local install
+before_script:
+  - python setup.py -q install
+
+# command to run tests
+script:
+  coverage run --source=cherrymusicserver,cmbootstrap,audiotranscode $(command -v nosetests)
+
+after_success:
+  coveralls
+
+branches:
+  # whitelist
+  only:
+    - master
+    - devel
+
+# notifications:
+# email:
+#   recipients:
+#     - tilman.boerner@gmx.de
+#   on_success: change  # [always|never|change] # default: change
+#   on_failure: always  # [always|never|change] # default: always
